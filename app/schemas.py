@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from app.models import UserRole, SentimentType, UrgencyType
@@ -12,7 +12,14 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    password: str = Field(..., min_length=6)
+    password: str = Field(..., min_length=6, max_length=72)
+    
+    @field_validator('password')
+    @classmethod
+    def validate_password_length(cls, v):
+        if len(v.encode('utf-8')) > 72:
+            raise ValueError('Password cannot be longer than 72 bytes')
+        return v
 
 
 class UserResponse(UserBase):
